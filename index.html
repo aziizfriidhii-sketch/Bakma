@@ -14,7 +14,7 @@ body{font-family:"Cairo",system-ui,sans-serif;color:var(--cream);min-height:100d
   background-image:radial-gradient(70% 45% at 50% 38%,rgba(242,193,78,.22),transparent 70%);
   padding:calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset-bottom) + 18px);
   display:flex;flex-direction:column;align-items:center;touch-action:manipulation;user-select:none;-webkit-user-select:none;overflow-x:hidden}
-.wrap{width:100%;max-width:400px;flex:1;display:flex;flex-direction:column}
+.wrap{width:100%;max-width:400px;flex:1;display:flex;flex-direction:column;position:relative;z-index:1}
 /* film strip progress */
 .strip{display:flex;gap:6px;direction:ltr;padding:8px;background:#1b1220;border-radius:10px;
   border-top:6px dotted #3a2c45;border-bottom:6px dotted #3a2c45}
@@ -74,6 +74,13 @@ h1{font:400 2.7rem/1.2 "Lalezar","Cairo",sans-serif;margin:.1em 0 .8rem;text-sha
 .bar{height:34px;margin-top:12px;background:repeating-linear-gradient(90deg,#2a1608 0 2px,#0000 2px 5px,#2a1608 5px 9px,#0000 9px 11px,#2a1608 11px 12px,#0000 12px 16px)}
 .wa{background:#25a244;color:#fff;font:800 1.05rem "Cairo",sans-serif;margin-top:14px;border-radius:12px;-webkit-mask:none;mask:none}
 .rain{position:fixed;top:-3rem;font-size:1.8rem;pointer-events:none;z-index:70;animation:fall linear forwards}
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.bg span{position:absolute;bottom:-3rem;opacity:.14;animation:rise linear infinite}
+.pbar{height:14px;background:#2a1d33;border-radius:8px;overflow:hidden;margin:14px 0}
+.pbar i{display:block;height:100%;width:0;background:var(--gold);animation:fillbar 1.5s linear forwards}
+.pm{font-weight:800;color:var(--gold);min-height:1.6em;margin:0}
+@keyframes rise{to{transform:translateY(-115vh) rotate(25deg)}}
+@keyframes fillbar{to{width:100%}}
 @keyframes fall{to{transform:translateY(115vh) rotate(540deg)}}
 @keyframes in{from{opacity:0;transform:translateY(14px)}}
 @keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
@@ -85,8 +92,8 @@ h1{font:400 2.7rem/1.2 "Lalezar","Cairo",sans-serif;margin:.1em 0 .8rem;text-sha
 </style>
 </head>
 <body>
+<div class="bg" id="bg"></div>
 <div class="wrap">
-  <div class="strip" id="strip"></div>
   <div id="stage"></div>
 </div>
 
@@ -101,24 +108,17 @@ const stage = $("#stage");
 let step = 0, strays = [];
 
 const steps = [
-  { type:"one",   q:"تحب السنيما؟", yes:"برشا 🍿" },
+  { type:"dodge", q:"تحب السنيما؟", yes:"برشا 🍿", no:"لا، ما نحبش" },
   { type:"dodge", q:`بش نمشيو نتفرجو في ${C.film} ماو`, yes:"إي 🔥", no:"لا، معنديش فلوس" },
   { type:"pick",  q:"شكون بش يخلّص عليك؟", opts:["خولة","عبودة","خولة و عبودة"] },
   { type:"hold",  q:'<span dir="ltr" style="display:block;text-align:right">Confirmer ?<br>Mafamech rjou3</span>', label:"اضغط على Confirmer 2 ثواني ⏳", no:"لا" }
 ];
-let AC;
-const blip = (f = 600, d = .08, type = "square", v = .05) => { try {
-  AC = AC || new (window.AudioContext || window.webkitAudioContext)(); AC.resume();
-  const o = AC.createOscillator(), g = AC.createGain(); o.type = type; o.frequency.value = f; g.gain.value = v;
-  o.connect(g); g.connect(AC.destination); o.start(); g.gain.exponentialRampToValueAtTime(.0001, AC.currentTime + d); o.stop(AC.currentTime + d);
-} catch (e) {} };
-const buzz = p => { navigator.vibrate && navigator.vibrate(p); blip(Array.isArray(p) ? 880 : 520); };
-const strip = () => $("#strip").innerHTML = steps.map((_, i) => `<i class="${i <= step ? "on" : ""}"></i>`).join("");
+const buzz = p => navigator.vibrate && navigator.vibrate(p);
 const clearStrays = () => { strays.forEach(e => e.remove()); strays = []; };
 const next = ms => setTimeout(() => { step++; step < steps.length ? render() : finish(); }, ms);
 
 function render(){
-  clearStrays(); strip();
+  clearStrays();
   const s = steps[step];
   let b = `<h1>${s.q}</h1>`;
   if (s.type === "pick") b += s.opts.map((o, i) => `<button class="btn ${i == 2 ? "" : "cream"}" data-i="${i}">${o}</button>`).join("");
@@ -168,20 +168,19 @@ function wire(s){
   }
 }
 
-function confetti(n = 55){
-  const r = ["🍿","🎬","🎟️","😂","🥤","🔥"];
+function confetti(n = 55, r = ["🍿","🎬","🎟️","😂","🥤","🔥"], d = 1.2){
   for (let i = 0; i < n; i++){
     const e = document.createElement("span"); e.className = "rain";
     e.textContent = r[Math.floor(Math.random() * r.length)];
     e.style.left = Math.random() * 100 + "vw";
     e.style.animationDuration = 2 + Math.random() * 2.5 + "s";
-    e.style.animationDelay = 1.2 + Math.random() * .8 + "s";
+    e.style.animationDelay = d + Math.random() * .8 + "s";
     document.body.appendChild(e); setTimeout(() => e.remove(), 7000);
   }
 }
 
 function finish(){
-  clearStrays(); $("#strip").classList.add("hide");
+  clearStrays();
   stage.style.justifyContent = "flex-start"; stage.style.animation = "none";
   stage.innerHTML = `
     <div class="marquee"></div>
@@ -195,13 +194,20 @@ function finish(){
     </div>
     <button class="btn wa" id="wa">ابعث التأكيد في واتساب 💬</button>`;
   ["l","r"].forEach(c => { const d = document.createElement("div"); d.className = "curtain " + c; document.body.appendChild(d); setTimeout(() => d.remove(), 2400); });
-  confetti(); setTimeout(() => buzz([80, 40, 80]), 600); setTimeout(() => { navigator.vibrate && navigator.vibrate(120); blip(110, .3, "sawtooth", .15); }, 2650);
+  confetti(); setTimeout(() => buzz([80, 40, 80]), 600); setTimeout(() => buzz(120), 2650);
 
   const nextSat = () => { const d = new Date(); d.setHours(13, 0, 0, 0); d.setDate(d.getDate() + (6 - d.getDay() + 7) % 7); if (d < new Date()) d.setDate(d.getDate() + 7); return d; };
   const tick = () => { const ms = Math.max(0, nextSat() - new Date()), s = Math.floor(ms / 1000);
     $("#cd").textContent = `${Math.floor(s / 86400)} يوم ${Math.floor(s % 86400 / 3600)} ساعة ${Math.floor(s % 3600 / 60)} دقيقة ${s % 60} ثانية`; };
   tick(); setInterval(tick, 1000);
   $("#wa").onclick = () => window.open("https://wa.me/" + C.phone + "?text=" + encodeURIComponent(`أنا جاي ✅🍿\n${C.film} · ${C.place} · ${C.day}\n${C.time}`), "_blank");
+}
+for (let i = 0; i < 9; i++) {
+  const s = document.createElement("span");
+  s.textContent = ["🍿","🎬","🎟️","🥤"][i % 4];
+  s.style.left = Math.random() * 92 + "vw"; s.style.fontSize = 1.4 + Math.random() * 1.4 + "rem";
+  s.style.animationDuration = 14 + Math.random() * 14 + "s"; s.style.animationDelay = -Math.random() * 20 + "s";
+  $("#bg").appendChild(s);
 }
 render();
 </script>
