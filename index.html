@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0710">
+<title>باكما 🎬</title>
+<link href="https://fonts.googleapis.com/css2?family=Lalezar&family=Cairo:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0710;--red:#8c1233;--red2:#5c0b21;--gold:#f2c14e;--cream:#fff1d6;--mint:#59e0a8}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{font-family:"Cairo",system-ui,sans-serif;color:var(--cream);min-height:100dvh;background:var(--bg);
+  background-image:radial-gradient(70% 45% at 50% 38%,rgba(242,193,78,.22),transparent 70%);
+  padding:calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset-bottom) + 18px);
+  display:flex;flex-direction:column;align-items:center;touch-action:manipulation;user-select:none;-webkit-user-select:none;overflow-x:hidden}
+.wrap{width:100%;max-width:400px;flex:1;display:flex;flex-direction:column;position:relative;z-index:1}
+/* film strip progress */
+.strip{display:flex;gap:6px;direction:ltr;padding:8px;background:#1b1220;border-radius:10px;
+  border-top:6px dotted #3a2c45;border-bottom:6px dotted #3a2c45}
+.strip i{flex:1;height:22px;border-radius:4px;background:#2a1d33;transition:background .4s}
+.strip i.on{background:var(--gold)}
+#stage{flex:1;display:flex;flex-direction:column;justify-content:center;padding:18px 0;animation:in .45s ease-out}
+.scene{font-weight:800;color:var(--gold);font-size:.95rem;margin-bottom:6px}
+h1{font:400 2.7rem/1.2 "Lalezar","Cairo",sans-serif;margin:.1em 0 .8rem;text-shadow:0 3px 0 var(--red)}
+/* ticket buttons */
+.btn{display:block;width:100%;border:0;margin-top:12px;padding:.75em 1em;color:#2a1608;background:var(--gold);
+  font:400 1.45rem "Lalezar","Cairo",sans-serif;position:relative;transition:transform .2s;
+  -webkit-mask:radial-gradient(circle 9px at 0 50%,#0000 97%,#000) left/51% 100% no-repeat,radial-gradient(circle 9px at 100% 50%,#0000 97%,#000) right/51% 100% no-repeat;
+          mask:radial-gradient(circle 9px at 0 50%,#0000 97%,#000) left/51% 100% no-repeat,radial-gradient(circle 9px at 100% 50%,#0000 97%,#000) right/51% 100% no-repeat}
+.btn:active{transform:scale(.97)}
+.btn.cream{background:var(--cream)}
+.btn.sel{background:var(--mint)}
+.btn:disabled{opacity:.6}
+.btn.tiny{width:auto;display:inline-block;margin:0;padding:.3em .9em;font:700 .78rem "Cairo",sans-serif;
+  background:#2a1d33;color:#a99bb8;-webkit-mask:none;mask:none;border-radius:9px}
+.slot{min-height:48px;display:flex;justify-content:center;align-items:center;margin-top:16px}
+.fly{position:fixed;z-index:30;transition:left .22s cubic-bezier(.3,1.6,.5,1),top .22s cubic-bezier(.3,1.6,.5,1),transform .2s,opacity .3s}
+.hold{overflow:hidden;touch-action:none;background:#3a2c45;color:var(--cream)}
+.hold b{position:absolute;inset:0;width:0;background:var(--red)}
+.hold span{position:relative}
+.shake{animation:shake .35s}
+.hide{display:none!important}
+/* finale */
+.curtain{position:fixed;top:0;bottom:0;width:51%;z-index:60;background:repeating-linear-gradient(90deg,var(--red) 0 22px,var(--red2) 22px 44px);
+  box-shadow:inset 0 -60px 80px rgba(0,0,0,.45)}
+.curtain.l{left:0;animation:openL 1.6s .5s cubic-bezier(.7,0,.3,1) forwards}
+.curtain.r{right:0;animation:openR 1.6s .5s cubic-bezier(.7,0,.3,1) forwards}
+.marquee{position:relative;height:50px;background:#1a0b14;border-radius:14px;border:3px solid var(--gold)}
+.marquee::before,.marquee::after{content:"";position:absolute;left:8px;right:8px;height:10px;
+  background:radial-gradient(circle,var(--gold) 3px,#0000 3.6px) 0 0/16px 10px repeat-x;animation:blink 1.2s steps(1) infinite}
+.marquee::before{top:6px}.marquee::after{bottom:4px;animation-delay:.6s}
+.marquee h2{font:400 3.2rem/1 "Lalezar",sans-serif;margin:.15em 0;color:var(--gold);text-shadow:0 0 18px rgba(242,193,78,.6)}
+.screen{position:relative;line-height:0;margin-top:12px;border-radius:10px;overflow:hidden;box-shadow:0 0 40px rgba(242,193,78,.25)}
+.screen img{width:100%;display:block;filter:sepia(.35) contrast(1.1) saturate(1.15);-webkit-user-drag:none}
+.screen::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(120% 100% at 50% 50%,#0000 55%,rgba(0,0,0,.55))}
+.ban{position:absolute;left:2%;bottom:4%;width:36%;z-index:3;text-align:center;line-height:1.1;color:#ff2d3f;
+  background:rgba(255,255,255,.9);border:4px solid #ff2d3f;border-radius:12px;padding:6px 4px 7px;
+  font-family:"Lalezar","Cairo",sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.45);animation:slam .45s 2.4s cubic-bezier(.2,1.4,.4,1) both,wig 2.6s 3.2s ease-in-out infinite}
+.ban i{display:block;font-style:normal;font-size:1.7rem;line-height:1}
+.ban b{display:block;font-weight:400;font-size:.95rem;direction:ltr;letter-spacing:.04em}
+.ban span{display:block;font-size:1.1rem}
+@keyframes wig{50%{transform:rotate(-4deg) scale(1.04)}}
+@keyframes slam{from{opacity:0;transform:rotate(-8deg) scale(3)}to{opacity:1;transform:rotate(-8deg) scale(1)}}
+.stk{position:absolute;font-size:2.1rem;transform:translate(-50%,-50%);pointer-events:none;z-index:2;animation:pop .35s}
+.hint{text-align:center;font-size:.72rem;color:#a99bb8;margin:.5rem 0 0;font-weight:600}
+.stub{position:relative;margin-top:14px;background:var(--cream);color:#2a1608;padding:14px 18px 16px;
+  -webkit-mask:radial-gradient(circle 12px at 0 0,#0000 98%,#000) left top/51% 100% no-repeat,radial-gradient(circle 12px at 100% 0,#0000 98%,#000) right top/51% 100% no-repeat;
+          mask:radial-gradient(circle 12px at 0 0,#0000 98%,#000) left top/51% 100% no-repeat,radial-gradient(circle 12px at 100% 0,#0000 98%,#000) right top/51% 100% no-repeat}
+.row{display:flex;justify-content:space-between;gap:10px;font-weight:800;padding:.4rem 0;border-bottom:1px dashed #cdb98f}
+.row span{color:#8a6c3c;font-weight:600}
+.row b{direction:ltr}
+.row b.ar{direction:rtl;text-align:left}
+.bar{height:34px;margin-top:12px;background:repeating-linear-gradient(90deg,#2a1608 0 2px,#0000 2px 5px,#2a1608 5px 9px,#0000 9px 11px,#2a1608 11px 12px,#0000 12px 16px)}
+.wa{background:#25a244;color:#fff;font:800 1.05rem "Cairo",sans-serif;margin-top:14px;border-radius:12px;-webkit-mask:none;mask:none}
+.rain{position:fixed;top:-3rem;font-size:1.8rem;pointer-events:none;z-index:70;animation:fall linear forwards}
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.bg span{position:absolute;bottom:-3rem;opacity:.14;animation:rise linear infinite}
+.pbar{height:14px;background:#2a1d33;border-radius:8px;overflow:hidden;margin:14px 0}
+.pbar i{display:block;height:100%;width:0;background:var(--gold);animation:fillbar 1.5s linear forwards}
+.pm{font-weight:800;color:var(--gold);min-height:1.6em;margin:0}
+@keyframes rise{to{transform:translateY(-115vh) rotate(25deg)}}
+@keyframes fillbar{to{width:100%}}
+@keyframes fall{to{transform:translateY(115vh) rotate(540deg)}}
+@keyframes in{from{opacity:0;transform:translateY(14px)}}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+@keyframes pop{0%{transform:translate(-50%,-50%) scale(.3)}70%{transform:translate(-50%,-50%) scale(1.3)}100%{transform:translate(-50%,-50%) scale(1)}}
+@keyframes openL{to{transform:translateX(-101%)}}
+@keyframes openR{to{transform:translateX(101%)}}
+@keyframes blink{50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.marquee::before,.marquee::after{animation:none}#stage{animation:none}}
+</style>
+</head>
+<body>
+<div class="bg" id="bg"></div>
+<div class="wrap">
+  <div id="stage"></div>
+</div>
+
+<script>
+/* ====== ✏️ EDIT HERE ====== */
+const C = { film:"باكما", place:"Azure City", day:"السبت", time:"نتقابلو 13 في Azure", phone:"21627960806" }; // رقمك بصيغة دولية بلا + (216 تونس)
+/* ========================== */
+
+const PHOTO = "photo.jpg";
+const $ = s => document.querySelector(s);
+const stage = $("#stage");
+let step = 0, strays = [];
+
+const steps = [
+  { type:"dodge", q:"تحب السنيما؟", yes:"برشا 🍿", no:"لا، ما نحبش" },
+  { type:"dodge", q:`بش نمشيو نتفرجو في ${C.film} ماو`, yes:"إي 🔥", no:"لا، معنديش فلوس" },
+  { type:"pick",  q:"شكون بش يخلّص عليك؟", opts:["خولة","عبودة","خولة و عبودة"] },
+  { type:"hold",  q:'<span dir="ltr" style="display:block;text-align:right">Confirmer ?<br>Mafamech rjou3</span>', label:"اضغط على Confirmer 2 ثواني ⏳", no:"لا" }
+];
+const buzz = p => navigator.vibrate && navigator.vibrate(p);
+const clearStrays = () => { strays.forEach(e => e.remove()); strays = []; };
+const next = ms => setTimeout(() => { step++; step < steps.length ? render() : finish(); }, ms);
+
+function render(){
+  clearStrays();
+  const s = steps[step];
+  let b = `<h1>${s.q}</h1>`;
+  if (s.type === "pick") b += s.opts.map((o, i) => `<button class="btn ${i == 2 ? "" : "cream"}" data-i="${i}">${o}</button>`).join("");
+  else if (s.type === "hold") b += `<button class="btn hold" id="hold"><b></b><span>${s.label}</span></button><div class="slot"><button class="btn tiny" id="no">${s.no}</button></div>`;
+  else if (s.type === "dodge") b += `<button class="btn" id="yes">${s.yes}</button><div class="slot"><button class="btn tiny" id="no">${s.no}</button></div>`;
+  else b += `<button class="btn" id="yes">${s.yes}</button>`;
+  stage.style.animation = "none"; void stage.offsetWidth; stage.style.animation = "";
+  stage.innerHTML = b; wire(s);
+}
+
+function wire(s){
+  if (s.type === "one") $("#yes").onclick = e => { e.target.classList.add("sel"); buzz(50); next(450); };
+  if (s.type === "dodge") {
+    const no = $("#no"), yes = $("#yes"), MAX = 7; let tries = 0, last = 0;
+    const run = e => {
+      e.preventDefault(); e.stopPropagation();
+      const now = Date.now(); if (now - last < 280 || tries >= MAX) return; last = now; tries++;
+      if (tries === 1){ no.style.width = no.offsetWidth + "px"; document.body.appendChild(no); strays.push(no); no.classList.add("fly"); }
+      if (tries >= MAX){ no.style.opacity = 0; no.style.pointerEvents = "none"; return; }
+      const w = no.offsetWidth, h = no.offsetHeight, m = 14, yr = yes.getBoundingClientRect();
+      let x, y, n = 0;
+      const hits = () => !(x + w < yr.left || x > yr.right || y + h < yr.top || y > yr.bottom);
+      do { x = m + Math.random() * (innerWidth - w - 2 * m); y = m + Math.random() * (innerHeight - h - 2 * m); n++; } while (n < 15 && hits());
+      no.style.left = x + "px"; no.style.top = y + "px";
+      no.style.transform = `scale(${Math.max(.6, 1 - tries * .06)})`;
+      yes.style.transform = `scale(${1 + tries * .03})`;
+      buzz(40);
+    };
+    ["pointerenter","pointerdown","touchstart","click"].forEach(ev => no.addEventListener(ev, run, { passive:false }));
+    yes.onclick = () => { yes.classList.add("sel"); no.style.pointerEvents = "none"; buzz(50); next(450); };
+  }
+  if (s.type === "pick") stage.querySelectorAll(".btn").forEach(b => b.onclick = () => {
+    stage.querySelectorAll(".btn").forEach(x => x.disabled = true); b.classList.add("sel"); buzz(50); next(550);
+  });
+  if (s.type === "hold") {
+    const h = $("#hold"), bar = h.querySelector("b"), no = $("#no"); let t0 = 0, raf = 0, done = false;
+    const tick = () => {
+      const p = Math.min((performance.now() - t0) / 2000, 1); bar.style.width = p * 100 + "%";
+      if (p >= 1){ done = true; buzz([80, 40, 80]); next(300); return; }
+      raf = requestAnimationFrame(tick);
+    };
+    h.addEventListener("pointerdown", e => { e.preventDefault(); if (done) return; t0 = performance.now(); raf = requestAnimationFrame(tick); });
+    const stop = () => { if (done) return; cancelAnimationFrame(raf); bar.style.width = 0; };
+    ["pointerup","pointerleave","pointercancel"].forEach(ev => h.addEventListener(ev, stop));
+    h.addEventListener("contextmenu", e => e.preventDefault());
+    no.onclick = () => { no.classList.remove("shake"); void no.offsetWidth; no.classList.add("shake"); buzz(70); };
+  }
+}
+
+function confetti(n = 55, r = ["🍿","🎬","🎟️","😂","🥤","🔥"], d = 1.2){
+  for (let i = 0; i < n; i++){
+    const e = document.createElement("span"); e.className = "rain";
+    e.textContent = r[Math.floor(Math.random() * r.length)];
+    e.style.left = Math.random() * 100 + "vw";
+    e.style.animationDuration = 2 + Math.random() * 2.5 + "s";
+    e.style.animationDelay = d + Math.random() * .8 + "s";
+    document.body.appendChild(e); setTimeout(() => e.remove(), 7000);
+  }
+}
+
+function finish(){
+  clearStrays();
+  stage.style.justifyContent = "flex-start"; stage.style.animation = "none";
+  stage.innerHTML = `
+    <div class="marquee"></div>
+    <div class="screen" id="ph"><img src="${PHOTO}" alt=""><div class="ban"><i>🚫</i><span>ممنوع على الصغار</span></div></div>
+    <div class="stub">
+      <div class="row"><span>المكان</span><b>${C.place}</b></div>
+      <div class="row"><span>النهار</span><b class="ar">${C.day}</b></div>
+      <div class="row"><span>الوقت</span><b class="ar">${C.time}</b></div>
+      <div class="row" style="border:0"><span>باقي</span><b class="ar" id="cd"></b></div>
+      <div class="bar"></div>
+    </div>
+    <button class="btn wa" id="wa">ابعث التأكيد في واتساب 💬</button>`;
+  ["l","r"].forEach(c => { const d = document.createElement("div"); d.className = "curtain " + c; document.body.appendChild(d); setTimeout(() => d.remove(), 2400); });
+  confetti(); setTimeout(() => buzz([80, 40, 80]), 600); setTimeout(() => buzz(120), 2650);
+
+  const nextSat = () => { const d = new Date(); d.setHours(13, 0, 0, 0); d.setDate(d.getDate() + (6 - d.getDay() + 7) % 7); if (d < new Date()) d.setDate(d.getDate() + 7); return d; };
+  const tick = () => { const ms = Math.max(0, nextSat() - new Date()), s = Math.floor(ms / 1000);
+    $("#cd").textContent = `${Math.floor(s / 86400)} يوم ${Math.floor(s % 86400 / 3600)} ساعة ${Math.floor(s % 3600 / 60)} دقيقة ${s % 60} ثانية`; };
+  tick(); setInterval(tick, 1000);
+  $("#wa").onclick = () => window.open("https://wa.me/" + C.phone + "?text=" + encodeURIComponent(`أنا جاي ✅🍿\n${C.film} · ${C.place} · ${C.day}\n${C.time}`), "_blank");
+}
+for (let i = 0; i < 9; i++) {
+  const s = document.createElement("span");
+  s.textContent = ["🍿","🎬","🎟️","🥤"][i % 4];
+  s.style.left = Math.random() * 92 + "vw"; s.style.fontSize = 1.4 + Math.random() * 1.4 + "rem";
+  s.style.animationDuration = 14 + Math.random() * 14 + "s"; s.style.animationDelay = -Math.random() * 20 + "s";
+  $("#bg").appendChild(s);
+}
+render();
+</script>
+</body>
+</html>
